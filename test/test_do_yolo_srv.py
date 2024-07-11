@@ -4,6 +4,7 @@ from cv_bridge import CvBridge
 from ros_rknn_yolo.srv import DoYolo, DoYoloRequest
 from sensor_msgs.msg import Image
 import signal
+import time
 
 class TimeoutException(Exception):   # Custom exception class
     pass
@@ -14,7 +15,11 @@ def timeout_handler(signum, frame):   # Custom signal handler
     
 def visualize_image(cv_image,name):
     cv2.imshow(name, cv_image)
-    cv2.waitKey(0)
+    while rospy.is_shutdown() == False:
+        if cv2.waitKey(1) != -1:
+            break
+        time.sleep(0.1)
+
     cv2.destroyAllWindows()
 
 def main():
@@ -70,9 +75,8 @@ def main():
         obj_index = 0
         for detection in res.yolo_result.detections:
             source_img = bridge.imgmsg_to_cv2(detection.source_img, "bgr8")
-            
-            
-            if res.yolo_result.masks is not None:
+
+            if res.yolo_result.masks:
                 mask = res.yolo_result.masks[obj_index]
                 mask_img = bridge.imgmsg_to_cv2(mask, "mono8")
                 #add to source_img
