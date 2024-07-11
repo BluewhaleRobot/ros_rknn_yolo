@@ -1,3 +1,4 @@
+print('load yolov5_func.py')
 #以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
 import cv2
 import numpy as np
@@ -251,7 +252,6 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
     yolo_result_msg.header = image_header
 
     if boxes is not None:
-        yolo_result_msg.detections = Detection2DArray()
         for box, score, cl in zip(boxes, scores, classes):
             top_left_x, top_left_y, right_bottom_x,right_bottom_y = box
             #恢复原图尺寸

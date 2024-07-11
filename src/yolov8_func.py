@@ -1,3 +1,4 @@
+print("load yolov8_func.py")
 #以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
 import cv2
 import numpy as np
@@ -229,25 +230,21 @@ def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
     return im, ratio, (left, top)
 
 def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, Draw_flag=False):
+    # print("start rknn_Func")
     IMG2 = cv2.cvtColor(IMG, cv2.COLOR_BGR2RGB)
     # 等比例缩放
     IMG2, ratio, padding = letterbox(IMG2)
     # 强制放缩
     # IMG = cv2.resize(IMG, (IMG_SIZE, IMG_SIZE))
     IMG2 = np.expand_dims(IMG2, 0)
-    
     outputs = rknn_lite.inference(inputs=[IMG2],data_format=['nhwc'])
-
     #print("oups1",len(outputs))
     #print("oups2",outputs[0].shape)
 
     boxes, classes, scores = yolov8_post_process(outputs)
-
     yolo_result_msg = YoloResult()
     yolo_result_msg.header = image_header
-
     if boxes is not None:
-        yolo_result_msg.detections = Detection2DArray()
         for box, score, cl in zip(boxes, scores, classes):
             top_left_x, top_left_y, right_bottom_x,right_bottom_y = box
             #恢复原图尺寸
@@ -270,10 +267,11 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
                 crop_img = IMG[int(top_left_y):int(right_bottom_y), int(top_left_x):int(right_bottom_x)]
                 #用cv_bridge将裁剪的目标物体图像转换为ros的sensor_msgs/Image消息格式
                 detection.source_img = bridge.cv2_to_imgmsg(crop_img, encoding="bgr8")
-                
             yolo_result_msg.detections.append(detection)
-
+    
     if boxes is not None and Draw_flag:
         draw(IMG, boxes, scores, classes, ratio, padding)
-
+    
+    # print("finish rknn_Func")
+    
     return yolo_result_msg, IMG

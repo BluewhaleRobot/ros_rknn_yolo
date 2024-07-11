@@ -36,6 +36,13 @@ catkin_package(
   CATKIN_DEPENDS roscpp rospy std_msgs sensor_msgs message_generation cv_bridge message_runtime vision_msgs
 )
 
+execute_process(COMMAND "git submodule update --init --recursive"
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  RESULT_VARIABLE result
+  ERROR_VARIABLE error_var
+  OUTPUT_VARIABLE out_var
+)
+
 # update python dependencies
 execute_process(COMMAND "virtualenv" "--system-site-packages" "-p" "/usr/bin/python" "${PROJECT_SOURCE_DIR}/venv")
 message("Installing rknn_toolkit_lite2 dependencies of ${PROJECT_NAME}")
@@ -67,3 +74,19 @@ if("${result}" STREQUAL "0")
 else()
   message(FATAL_ERROR "Install python dependencies failed")
 endif()
+
+message("Installing sahi dependencies of ${PROJECT_NAME}")
+execute_process(
+  COMMAND "${PROJECT_SOURCE_DIR}/venv/bin/pip" "install" "-i" "https://pypi.mirrors.ustc.edu.cn/simple" "--timeout" "120" "-e" ${PROJECT_SOURCE_DIR}/sahi
+  WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+  RESULT_VARIABLE result
+  ERROR_VARIABLE error_var
+  OUTPUT_VARIABLE out_var
+)
+
+if("${result}" STREQUAL "0")
+  message("Install sahi success")
+else()
+  message(FATAL_ERROR "Install sahi  failed")
+endif()
+

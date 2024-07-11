@@ -1,3 +1,4 @@
+print('load yolov8_seg_func.py')
 #以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
 import cv2
 import numpy as np
@@ -353,7 +354,7 @@ def merge_seg(image, seg_imgs, classes, padding):
     return image
 
 def merge_seg2(image, seg_img):
-    seg = cv2.cvtColor(seg, cv2.COLOR_GRAY2BGR)
+    seg = cv2.cvtColor(seg_img, cv2.COLOR_GRAY2BGR)
     image = cv2.add(image, seg)
     return image
 
@@ -403,9 +404,8 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
 
     yolo_result_msg = YoloResult()
     yolo_result_msg.header = image_header
-
+    
     if boxes is not None:
-        yolo_result_msg.detections = Detection2DArray()
         for box, score, cl in zip(boxes, scores, classes):
             top_left_x, top_left_y, right_bottom_x,right_bottom_y = box
             #恢复原图尺寸
@@ -430,7 +430,6 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
                 detection.source_img = bridge.cv2_to_imgmsg(crop_img, encoding="bgr8")
 
             yolo_result_msg.detections.append(detection)
-            
     seg_img = np.sum(seg_imgs, axis=0)
     if seg_imgs is not None:
         seg = seg_img.astype(np.uint8)
@@ -448,20 +447,32 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
 
         seg_img = cv2.resize(seg2, (IMG.shape[1], IMG.shape[0]), interpolation=cv2.INTER_LINEAR)
         for i in range(len(seg_imgs)):
+            mask_img = seg_imgs[i]
+            mask_img = mask_img.astype(np.uint8)
+            mask_img = mask_img * 128
+            if padding[1] == 0:
+                if padding[0] != 0:
+                    mask_img = mask_img[:, padding[0]:-padding[2]]
+                else:
+                    pass
+            else:
+                if padding[0] == 0:
+                    mask_img = mask_img[padding[1]:-padding[3], :]
+                else:
+                    mask_img = mask_img[padding[1]:-padding[3], padding[0]:-padding[2]]
+            mask_img = cv2.resize(mask_img, (IMG.shape[1], IMG.shape[0]), interpolation=cv2.INTER_LINEAR)
             top_left_x, top_left_y, right_bottom_x,right_bottom_y = boxes[i]
             #恢复原图尺寸
             top_left_x = (top_left_x - padding[0])/ratio[0]
             top_left_y = (top_left_y - padding[1])/ratio[1]
             right_bottom_x = (right_bottom_x - padding[0])/ratio[0]
             right_bottom_y = (right_bottom_y - padding[1])/ratio[1]
-            crop_seg_img = seg_img[int(top_left_y):int(right_bottom_y), int(top_left_x):int(right_bottom_x)]
+            crop_seg_img = mask_img[int(top_left_y):int(right_bottom_y), int(top_left_x):int(right_bottom_x)]
             mask_image_msg = bridge.cv2_to_imgmsg(
                 crop_seg_img, encoding="mono8"
             )
             yolo_result_msg.masks.append(mask_image_msg)
-
     if boxes is not None and Draw_flag:
         IMG = merge_seg2(IMG, seg_img)
         draw(IMG, boxes, scores, classes, ratio, padding)
-
     return yolo_result_msg, IMG

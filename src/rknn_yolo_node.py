@@ -1,18 +1,17 @@
-import rospy
 from dynamic_reconfigure.server import Server
 from ros_rknn_yolo.cfg import RknnYoloConfig
-import cv2
-import numpy as np
 import cv_bridge
 from std_msgs.msg import Header
 from vision_msgs.msg import Detection2D,Detection2DArray,ObjectHypothesisWithPose,YoloResult
 from sensor_msgs.msg import Image
 import importlib
-from rknnpool import rknnPoolExecutor
 import threading
 from ros_rknn_yolo.srv import DoYolo, DoYoloResponse
+import rospy
 
 ROS_NODE = rospy.init_node('~')
+from rknnpool import rknnPoolExecutor
+
 RKNN_MODEL_FUNCTION_FILE = rospy.get_param('~rknn_model_function', 'yolov8_func')
 RKNN_MODEL_FUNCTION = importlib.import_module(RKNN_MODEL_FUNCTION_FILE)
 RKNN_MODEL_PATH = rospy.get_param('~rknn_model_path', '/home/xiaoqiang/Documents/ros/src/ros_rknn_yolo/model/yolov8s.rknn')
@@ -34,11 +33,13 @@ CLASSES = rospy.get_param('~classes', ["person", "bicycle", "car", "motorbike ",
 TPES = rospy.get_param('~tpes', 1)
 NPU_START_ID = rospy.get_param('~npu_start_id', 0)
 
+
 POOL = rknnPoolExecutor(
     rknnModel=RKNN_MODEL_PATH,
     TPEs=TPES,
     NpuStartId=NPU_START_ID,
     func=RKNN_MODEL_FUNCTION.rknn_Func)
+# POOL = None
 
 CFG_LOCK = threading.Lock()
 POOL_LOCK1 = threading.Lock()
@@ -46,12 +47,12 @@ POOL_LOCK2 = threading.Lock()
 
 class YoloSubscriber:
     def __init__(self):
-        self.server = Server(RknnYoloConfig, self.cfg_callback)
         self.subscriber = None
-        self.yolo_result_pub = rospy.Publisher('yolo_output_msg', YoloResult, queue_size=10)
-        self.yolo_result_img_pub = rospy.Publisher('yolo_output_img_msg', Image, queue_size=10)
         self.bridge = cv_bridge.CvBridge()
         self.subscriber_topic_name = None 
+        self.server = Server(RknnYoloConfig, self.cfg_callback)
+        self.yolo_result_pub = rospy.Publisher('yolo_output_msg', YoloResult, queue_size=10)
+        self.yolo_result_img_pub = rospy.Publisher('yolo_output_img_msg', Image, queue_size=10)
 
     def cfg_callback(self, config, level):
         with CFG_LOCK:
@@ -79,6 +80,8 @@ class YoloSubscriber:
                 self.subscriber = None
                 self.subscriber_topic_name = None
         
+        return config
+        
     def image_callback(self, img_msg):
         #将data转换成opencv格式然后传入rknn模型进行检测
         #get lock
@@ -104,7 +107,7 @@ class YoloSubscriber:
         else:
             pass
         
-    def publish_msgs(self):
+    def publish_msgs(self, event=None):
         #get lock
         with POOL_LOCK2:
             with CFG_LOCK:
@@ -126,30 +129,36 @@ class YoloSubscriber:
                 pass
 
     def do_yolo_srv(self, req):
+        # print("do_yolo_srv1")
         with POOL_LOCK1 and POOL_LOCK2:
+            # print("do_yolo_srv2")
             POOL.clearqueue()
+            # print("do_yolo_srv3")
             cv_image = self.bridge.imgmsg_to_cv2(req.input_img, "bgr8")
             #check cv_image is None or too small size
             if cv_image is None or cv_image.shape[0] < 6 or cv_image.shape[1] < 6:
                 res = DoYoloResponse()
                 res.result = False
                 return res
-        
+            # print("do_yolo_srv4")
             header = Header()
             POOL.put(cv_image, header, req.enable_crop, req.enable_draw)
+            # print("do_yolo_srv5")
             flag = False
             while POOL.getQueueSize() > 0 and rospy.is_shutdown() == False:
                 #sleep 10ms
                 rospy.sleep(0.01)
-                
+            # print("do_yolo_srv6")   
             while not flag and rospy.is_shutdown() == False:
                 result, flag = POOL.get()
                 #sleep 10ms
                 rospy.sleep(0.01)
+            # print("do_yolo_srv7")
             res = DoYoloResponse()
             res.result = flag
             res.yolo_result = result[0]
             res.yolo_result_img = self.bridge.cv2_to_imgmsg(result[1], "bgr8")
+            # print("do_yolo_srv8")
             return res
         
 if __name__ == "__main__":

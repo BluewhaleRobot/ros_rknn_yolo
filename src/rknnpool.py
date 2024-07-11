@@ -1,9 +1,8 @@
 from queue import Queue
 import queue
 import time
-# import torch
 from rknnlite.api import RKNNLite
-from concurrent.futures import ThreadPoolExecutor, as_completed, Future
+from concurrent.futures import ThreadPoolExecutor, Future
 import threading
 import cv_bridge
 
@@ -50,16 +49,19 @@ class rknnPoolExecutor():
         self.bridge = cv_bridge.CvBridge()
 
     def put(self, frame, header, crop_object_flag, draw_flag):
+        # print("put1, queue size: ", len(self.queue))
         fut = self.pool.submit(
             self.func, self.rknnPool[self.num % self.TPEs], self.bridge, frame, header, crop_object_flag, draw_flag)
         fut.add_done_callback(self._on_done)  # 当任务完成时，调用_on_done方法
         with self.queue_lock:
             self.queue[id(fut)] = fut
         self.num += 1
+        # print("put2, queue size: ", len(self.queue))
 
     def _on_done(self, fut: Future):
         # 当任务完成时，将结果添加到结果队列中
         self.result_queue.put(fut.result())
+        # print("_on_done, result_queue size: ", self.result_queue.qsize())
         with self.queue_lock:
             del self.queue[id(fut)]
 
