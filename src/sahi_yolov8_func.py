@@ -1,9 +1,11 @@
+print('load sahi_yolov8_func.py')
 #以下代码改自https://github.com/rockchip-linux/rknn-toolkit2/tree/master/examples/onnx/yolov5
 import cv2
 import numpy as np
 import rospy
 from vision_msgs.msg import Detection2D,Detection2DArray,ObjectHypothesisWithPose,YoloResult
-from sahi.predict import get_sliced_prediction, ObjectPrediction
+from sahi.predict import get_sliced_prediction
+from sahi.prediction import ObjectPrediction, PredictionResult
 from sahi.utils.compatibility import fix_full_shape_list, fix_shift_amount_list
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -200,11 +202,11 @@ def yolov8_post_process(input_data):
 
 def draw(image, object_prediction_list):
     for object_prediction in object_prediction_list:
-        box = object_prediction.box
-        score = object_prediction.score
+        box = object_prediction.bbox
+        score = object_prediction.score.value
         cl = object_prediction.category.id
 
-        top, left, right, bottom = box
+        top, left, right, bottom = box.minx, box.miny, box.maxx, box.maxy
         # print('class: {}, score: {}'.format(CLASSES[cl], score))
         # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
         top = int(top)
@@ -429,12 +431,14 @@ class Yolov8RknnDetectionModel(DetectionModel):
         input_w, input_h = input_shape
         # Scale boxes to original dimensions
         boxes = boxes * np.array([image_w / input_w, image_h / input_h, image_w / input_w, image_h / input_h])
+        # boxes 取整数
+        boxes = np.round(boxes).astype(np.int32)
         # Format the results
         prediction_result = []
         for bbox, score, label in zip(boxes, scores, class_ids):
             bbox = bbox.tolist()
             cls_id = int(label)
-            prediction_result.append([bbox[0], bbox[1], bbox[2], bbox[3], score, cls_id])
+            prediction_result.append([bbox[0], bbox[1], bbox[2], bbox[3], float(score), cls_id])
         # prediction_result = [torch.tensor(prediction_result)]
         prediction_result = [prediction_result]
         return prediction_result
@@ -531,15 +535,18 @@ class Yolov8RknnDetectionModel(DetectionModel):
                 if not (bbox[0] < bbox[2]) or not (bbox[1] < bbox[3]):
                     print(f"ignoring invalid prediction with bbox: {bbox}")
                     continue
-                object_prediction = ObjectPrediction(
+                try:
+                    object_prediction = ObjectPrediction(
                     bbox=bbox,
                     category_id=category_id,
                     score=score,
-                    bool_mask=None,
                     category_name=category_name,
                     shift_amount=shift_amount,
                     full_shape=full_shape,
                 )
+                except Exception as e:
+                    print(f"Caught an exception: {e}")
+                
                 object_prediction_list.append(object_prediction)
             object_prediction_list_per_image.append(object_prediction_list)
         self._object_prediction_list_per_image = object_prediction_list_per_image
@@ -565,31 +572,31 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
             overlap_height_ratio = OVERLAP_HEIGHT_RATIO,  # 高度重叠比率
             overlap_width_ratio = OVERLAP_WIDTH_RATIO  # 宽度重叠比率
         )
-
+    #print type of sahi_result.object_prediction_list
+    # print(type(sahi_result.object_prediction_list[0].bbox))
+    
     yolo_result_msg = YoloResult()
     yolo_result_msg.header = image_header
 
-    if sahi_result.object_prediction_list is not None:
-        yolo_result_msg.detections = Detection2DArray()
+    if sahi_result.object_prediction_list:
         for object_prediction in sahi_result.object_prediction_list:
             detection = Detection2D()
-            detection.bbox.center.x = float((object_prediction.bbox[0] + object_prediction.bbox[2]) / 2.0)
-            detection.bbox.center.y = float((object_prediction.bbox[1] + object_prediction.bbox[3]) / 2.0)
-            detection.bbox.size_x = float(object_prediction.bbox[2] - object_prediction.bbox[0])
-            detection.bbox.size_y = float(object_prediction.bbox[3] - object_prediction.bbox[1])
+            detection.bbox.center.x = float((object_prediction.bbox.minx + object_prediction.bbox.maxx) / 2.0)
+            detection.bbox.center.y = float((object_prediction.bbox.miny + object_prediction.bbox.maxy) / 2.0)
+            detection.bbox.size_x = float(object_prediction.bbox.maxx - object_prediction.bbox.minx)
+            detection.bbox.size_y = float(object_prediction.bbox.maxy - object_prediction.bbox.miny)
             hypothesis = ObjectHypothesisWithPose()
-            hypothesis.id = int(object_prediction.category_id)
-            hypothesis.score = float(object_prediction.score)
+            hypothesis.id = int(object_prediction.category.id)
+            hypothesis.score = float(object_prediction.score.value)
             detection.results.append(hypothesis)
-            detection.object_name = object_prediction.category_name
+            detection.object_name = object_prediction.category.name
             if Crop_object_flag:
                 #根据检测框裁剪目标物体图像
-                crop_img = IMG[int(object_prediction.bbox[1]):int(object_prediction.bbox[3]), int(object_prediction.bbox[0]):int(object_prediction.bbox[2])]
+                crop_img = IMG[object_prediction.bbox.miny:object_prediction.bbox.maxy, object_prediction.bbox.minx:object_prediction.bbox.maxx]
                 #用cv_bridge将裁剪的目标物体图像转换为ros的sensor_msgs/Image消息格式
                 detection.source_img = bridge.cv2_to_imgmsg(crop_img, encoding="bgr8")
             yolo_result_msg.detections.append(detection)
-            
-    if sahi_result.object_prediction_list is not None and Draw_flag:
+    
+    if sahi_result.object_prediction_list and Draw_flag:
         draw(IMG, sahi_result.object_prediction_list)
-
     return yolo_result_msg, IMG

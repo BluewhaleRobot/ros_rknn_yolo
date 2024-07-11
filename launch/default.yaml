@@ -5,12 +5,12 @@ raw_img_topic_name: "/camera_node/image_raw"
 drop_interval: 1
 obj_thresh: 0.25
 nms_thresh: 0.45
-slice_height: 480,  # 切片高度
-slice_width: 480,  # 切片宽度
-overlap_height_ratio: 0.25,  # 高度重叠比率
+slice_height: 480  # 切片高度
+slice_width: 480  # 切片宽度
+overlap_height_ratio: 0.25  # 高度重叠比率
 overlap_width_ratio: 0.25  # 宽度重叠比率
 model_img_size: 640
-rknn_model_function: "yolov8_func"
+rknn_model_function: "sahi_yolov8_func"
 rknn_model_path: "/home/xiaoqiang/Documents/ros/src/ros_rknn_yolo/model/yolov8s.rknn"
 classes: ["person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light",
       "fire hydrant", "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant",

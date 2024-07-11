@@ -19,6 +19,7 @@ def visualize_image(cv_image,name):
         if cv2.waitKey(1) != -1:
             break
         time.sleep(0.1)
+        cv2.imshow(name, cv_image)
 
     cv2.destroyAllWindows()
 

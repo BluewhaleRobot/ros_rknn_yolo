@@ -10,7 +10,6 @@ from ros_rknn_yolo.srv import DoYolo, DoYoloResponse
 import rospy
 
 ROS_NODE = rospy.init_node('~')
-from rknnpool import rknnPoolExecutor
 
 RKNN_MODEL_FUNCTION_FILE = rospy.get_param('~rknn_model_function', 'yolov8_func')
 RKNN_MODEL_FUNCTION = importlib.import_module(RKNN_MODEL_FUNCTION_FILE)
@@ -33,6 +32,7 @@ CLASSES = rospy.get_param('~classes', ["person", "bicycle", "car", "motorbike ",
 TPES = rospy.get_param('~tpes', 1)
 NPU_START_ID = rospy.get_param('~npu_start_id', 0)
 
+from rknnpool import rknnPoolExecutor
 
 POOL = rknnPoolExecutor(
     rknnModel=RKNN_MODEL_PATH,
