@@ -64,11 +64,19 @@ CATEGORY_MAPPING  = rospy.get_param('~category_mapping', {'0': 'person', '1': 'b
                     '70': 'toaster', '71': 'sink', '72': 'refrigerator', '73': 'book', '74': 'clock', '75': 'vase',
                     '76': 'scissors', '77': 'teddy bear', '78': 'hair drier', '79': 'toothbrush'})
 
+color_palette = np.random.uniform(100, 255, size=(len(CATEGORY_MAPPING), 3))
+
+HIDE_LABEL = rospy.get_param('~hide_label', False)  # 是否隐藏标签
 SLICE_HEIGHT = rospy.get_param('~slice_height', 480)  # 切片高度
 SLICE_WIDTH = rospy.get_param('~slice_width', 480)  # 切片宽度
 OVERLAP_HEIGHT_RATIO = rospy.get_param('~overlap_height_ratio', 0.25)  # 高度重叠比率
 OVERLAP_WIDTH_RATIO = rospy.get_param('~overlap_width_ratio', 0.25)  # 宽度重叠比率
 
+POSTPROCESS_TYPE = rospy.get_param('~postprocess_type', 'GREEDYNMM')
+POSTPROCESS_MATCH_METRIC = rospy.get_param('~postprocess_match_metric', 'IOS')
+POSTPROCESS_MATCH_THRESHOLD = rospy.get_param('~postprocess_match_threshold', 0.5)
+POSTPROCESS_CLASS_AGNOSTIC = rospy.get_param('~postprocess_class_agnostic', False)
+            
 def filter_boxes(boxes, box_confidences, box_class_probs):
     """Filter boxes with object threshold.
     """
@@ -201,6 +209,7 @@ def yolov8_post_process(input_data):
     return boxes, classes, scores
 
 def draw(image, object_prediction_list):
+    rect_th = max(round(sum(image.shape) / 2 * 0.003), 2)
     for object_prediction in object_prediction_list:
         box = object_prediction.bbox
         score = object_prediction.score.value
@@ -211,12 +220,14 @@ def draw(image, object_prediction_list):
         # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
         top = int(top)
         left = int(left)
-
-        cv2.rectangle(image, (top, left), (int(right), int(bottom)), (255, 0, 0), 2)
-        cv2.putText(image, '{0} {1:.2f}'.format(CLASSES[cl], score),
-                    (top, left - 6),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6, (0, 0, 255), 2)
+        color = color_palette[cl]
+        
+        cv2.rectangle(image, (top, left), (int(right), int(bottom)), color, rect_th)
+        if not HIDE_LABEL:
+            cv2.putText(image, '{0} {1:.2f}'.format(CLASSES[cl], score),
+                        (top, left - 6),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, color, max(rect_th-1 ,1))
 
 def letterbox(im, new_shape=(640, 640), color=(0, 0, 0)):
     shape = im.shape[:2]  # current shape [height, width]
@@ -426,15 +437,21 @@ class Yolov8RknnDetectionModel(DetectionModel):
     def _post_process(
         self, outputs: np.ndarray, input_shape: Tuple[int, int], image_shape: Tuple[int, int]
     ):
+        # Format the results
+        prediction_result = []
+        
         boxes, class_ids, scores = yolov8_post_process(outputs)
         image_h, image_w = image_shape
         input_w, input_h = input_shape
         # Scale boxes to original dimensions
+        #判断boxes这个np数组是否为空
+        if boxes is None:
+            prediction_result = [prediction_result]
+            return prediction_result
         boxes = boxes * np.array([image_w / input_w, image_h / input_h, image_w / input_w, image_h / input_h])
         # boxes 取整数
         boxes = np.round(boxes).astype(np.int32)
-        # Format the results
-        prediction_result = []
+        
         for bbox, score, label in zip(boxes, scores, class_ids):
             bbox = bbox.tolist()
             cls_id = int(label)
@@ -553,7 +570,6 @@ class Yolov8RknnDetectionModel(DetectionModel):
         
 def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, Draw_flag=False):
     IMG2 = cv2.cvtColor(IMG, cv2.COLOR_BGR2RGB)
-
     # 初始化YOLOv8模型
     yolov8_rknn_detection_model = Yolov8RknnDetectionModel(
         model=rknn_lite,  # 模型路径
@@ -570,7 +586,11 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
             slice_height = SLICE_HEIGHT,  # 切片高度
             slice_width = SLICE_WIDTH,  # 切片宽度
             overlap_height_ratio = OVERLAP_HEIGHT_RATIO,  # 高度重叠比率
-            overlap_width_ratio = OVERLAP_WIDTH_RATIO  # 宽度重叠比率
+            overlap_width_ratio = OVERLAP_WIDTH_RATIO,  # 宽度重叠比率
+            postprocess_type = POSTPROCESS_TYPE,
+            postprocess_match_metric = POSTPROCESS_MATCH_METRIC,
+            postprocess_match_threshold = POSTPROCESS_MATCH_THRESHOLD,
+            postprocess_class_agnostic = POSTPROCESS_CLASS_AGNOSTIC,
         )
     #print type of sahi_result.object_prediction_list
     # print(type(sahi_result.object_prediction_list[0].bbox))

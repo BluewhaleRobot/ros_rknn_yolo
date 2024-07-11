@@ -1,7 +1,7 @@
 <launch>
     <arg name="use_custom_setting" default="false" />
     <node name="yolo_node_1" pkg="ros_rknn_yolo" type="rknn_yolo_node.sh" output="screen">
-        <rosparam command="load" file="$(find ros_rknn_yolo)/config/default.yaml" />
+        <rosparam command="load" file="$(find ros_rknn_yolo)/config/default_v8s_seg.yaml" />
         <rosparam command="load" file="$(find startup)/params/do_yolo_1.yaml" if="$(eval use_custom_setting)" />
         <remap from="yolo_output_msg" to="/yolo_node_1/yolo_result" />
         <remap from="yolo_output_img_msg" to="/yolo_node_1/yolo_result_img" />

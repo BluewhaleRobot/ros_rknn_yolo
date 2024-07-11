@@ -67,7 +67,7 @@ def main():
             # Reset the alarm
             signal.alarm(0)
             
-        print("service done " + str(res.result))
+        print("service done " + str(res.result) + " " + str(len(res.yolo_result.detections)) + " " + str(len(res.yolo_result.masks)))
         
         # Convert the response images to OpenCV images and visualize them
         yolo_result_img = bridge.imgmsg_to_cv2(res.yolo_result_img, "bgr8")
