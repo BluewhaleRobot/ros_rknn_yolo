@@ -1,0 +1,2 @@
+catkin编译后需要执行sudo ./fix_rknn2_runtime 来更新rknn2_runtime，这样才能保证npu库函数版本一致。
+After compiling with catkin, you need to execute `sudo ./fix_rknn2_runtime` to update rknn2_runtime, so as to ensure the consistency of the npu library function version.

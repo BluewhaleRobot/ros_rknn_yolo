@@ -1,0 +1,3 @@
+[submodule "sahi"]
+	path = sahi
+	url = http://git.bwbot.org/publish/sahi.git

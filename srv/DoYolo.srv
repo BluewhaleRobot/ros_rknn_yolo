@@ -1,0 +1,7 @@
+sensor_msgs/Image input_img
+bool enable_draw # draw result on input image
+bool enable_crop # crop detected objects
+---
+bool result
+vision_msgs/YoloResult yolo_result
+sensor_msgs/Image yolo_result_img

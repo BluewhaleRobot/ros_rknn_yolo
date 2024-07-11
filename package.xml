@@ -1,0 +1,25 @@
+<package format="2">
+  <name>ros_rknn_yolo</name>
+  <version>0.0.1</version>
+  <description>
+      yolov8 inference on rknn
+  </description>
+  <license>MIT</license>
+  <author email="xiefs@foxmail.com">Randoms</author>
+  <maintainer email="xiefs@foxmail.com">Randoms</maintainer>
+  <url type="website">https:://git.bwbot.org/publish/ros_rknn_yolo.git</url>
+  <url type="bugtracker">https:://git.bwbot.org/publish/ros_rknn_yolo.git</url>
+  <url type="repository">https:://git.bwbot.org/publish/ros_rknn_yolo.git</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>message_runtime</exec_depend>
+  <depend>message_generation</depend>
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>cv_bridge</depend>
+  <depend>genmsg</depend>
+  <depend>vision_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+</package>

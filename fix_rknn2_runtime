@@ -1,0 +1,16 @@
+#!/bin/bash
+if [ $(whoami) != "root" ]; then
+  echo "You need to run it with sudo"
+  exit 1
+fi
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+cp $DIR/rknn2_runtime/rknn_server/aarch64/usr/bin/rknn_server  /usr/bin/rknn_server
+cp $DIR/rknn2_runtime/rknn_server/aarch64/usr/bin/start_rknn.sh  /usr/bin/start_rknn.sh
+cp $DIR/rknn2_runtime/rknn_server/aarch64/usr/bin/restart_rknn.sh  /usr/bin/restart_rknn.sh
+
+cp $DIR/rknn2_runtime/librknn_api/aarch64/librknnrt.so /usr/lib/librknnrt.so
+rm -rf /usr/lib/librknn_api.so
+sudo ln -s /usr/lib/librknnrt.so /usr/lib/librknn_api.so
+
+echo "update rknn2_runtime success"
