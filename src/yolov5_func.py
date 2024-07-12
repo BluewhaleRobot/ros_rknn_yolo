@@ -187,6 +187,10 @@ def draw(image, boxes, scores, classes, ratio, padding):
         left = (left - padding[1])/ratio[1]
         right = (right - padding[0])/ratio[0]
         bottom = (bottom - padding[1])/ratio[1]
+        top = max(0, top)
+        left = max(0, left)
+        right = min(image.shape[1], right)
+        bottom = min(image.shape[0], bottom)
         # print('class: {}, score: {}'.format(CLASSES[cl], score))
         # print('box coordinate left,top,right,down: [{}, {}, {}, {}]'.format(top, left, right, bottom))
         top = int(top)
@@ -265,6 +269,12 @@ def rknn_Func(rknn_lite,  bridge, IMG, image_header, Crop_object_flag = False, D
             top_left_y = (top_left_y - padding[1])/ratio[1]
             right_bottom_x = (right_bottom_x - padding[0])/ratio[0]
             right_bottom_y = (right_bottom_y - padding[1])/ratio[1]
+            #限制范围不要超出原图大小
+            top_left_x = max(0, top_left_x)
+            top_left_y = max(0, top_left_y)
+            right_bottom_x = min(IMG.shape[1], right_bottom_x)
+            right_bottom_y = min(IMG.shape[0], right_bottom_y)
+            
             detection = Detection2D()
             detection.bbox.center.x = float((top_left_x + right_bottom_x) / 2.0)
             detection.bbox.center.y = float((top_left_y + right_bottom_y) / 2.0)

@@ -1,7 +1,12 @@
+import importlib
+import logging
+from rknnlite.api import RKNNLite
+importlib.reload(logging)
+logging.basicConfig(level=logging.INFO)
+
 from queue import Queue
 import queue
 import time
-from rknnlite.api import RKNNLite
 from concurrent.futures import ThreadPoolExecutor, Future
 import threading
 import cv_bridge

@@ -1,10 +1,12 @@
+import importlib
+from rknnpool import rknnPoolExecutor
 from dynamic_reconfigure.server import Server
 from ros_rknn_yolo.cfg import RknnYoloConfig
 import cv_bridge
 from std_msgs.msg import Header
 from vision_msgs.msg import Detection2D,Detection2DArray,ObjectHypothesisWithPose,YoloResult
 from sensor_msgs.msg import Image
-import importlib
+
 import threading
 from ros_rknn_yolo.srv import DoYolo, DoYoloResponse
 import rospy
@@ -32,7 +34,7 @@ CLASSES = rospy.get_param('~classes', ["person", "bicycle", "car", "motorbike ",
 TPES = rospy.get_param('~tpes', 1)
 NPU_START_ID = rospy.get_param('~npu_start_id', 0)
 
-from rknnpool import rknnPoolExecutor
+# from rknnpool import rknnPoolExecutor
 
 POOL = rknnPoolExecutor(
     rknnModel=RKNN_MODEL_PATH,
