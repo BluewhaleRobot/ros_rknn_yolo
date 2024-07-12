@@ -49,7 +49,7 @@ def main():
             img_msg.header.stamp = timestamp
             pub.publish(img_msg)
         else:
-            break
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
         rate.sleep()
 
     cap.release()

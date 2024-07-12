@@ -63,13 +63,13 @@ git克隆然后catkin_make, 依赖的vision_msgs包在这里：http://git.bwbot.
 要运行此启动文件，您可以在终端中输入以下命令：
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch
 ```
 
 如果您想使用自定义参数配置，可以在运行命令时添加`use_custom_setting:=true`：
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch use_custom_setting:=true
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch use_custom_setting:=true
 ```
 
 ### 运行基本测试
@@ -93,5 +93,5 @@ python bus_do_yolo_srv.py
 请注意，`bus_do_yolo_srv.py`脚本需要一个正在运行的`rknn_yolo_node`实例。在运行测试之前，请确保启动节点：
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch
 ```

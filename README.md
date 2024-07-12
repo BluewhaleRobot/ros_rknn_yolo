@@ -63,13 +63,13 @@ Each node publishes two topics: `yolo_output_msg` and `yolo_output_img_msg`. The
 To run this launch file, you can enter the following command in the terminal:
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch
 ```
 
 If you want to use custom parameter configurations, you can add `use_custom_setting:=true` when running the command:
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch use_custom_setting:=true
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch use_custom_setting:=true
 ```
 
 ### Running Basic Test
@@ -93,5 +93,5 @@ python bus_do_yolo_srv.py
 Please note that the `bus_do_yolo_srv.py` script requires a running instance of the `rknn_yolo_node`. Make sure to launch the node before running the test:
 
 ```bash
-roslaunch xiaoqiang_yolo xiaoqiang_yolo.launch
+roslaunch ros_rknn_yolo xiaoqiang_yolo.launch
 ```
