@@ -36,7 +36,7 @@
 
 ## 安装说明
 
-git克隆然后catkin_make
+git克隆然后catkin_make, 依赖的vision_msgs包在这里：http://git.bwbot.org/publish/vision_msgs.git
 
 ### Post-catkin-make-编译说明
 

@@ -36,7 +36,7 @@ The `rknn_yolo_node` is a ROS node that uses the RKNN (Rockchip NPU Neural Netwo
 
 ## Install Instructions
 
-git clone then catkin_make
+Git clone and then catkin_make, the dependent vision_msgs package is here: http://git.bwbot.org/publish/vision_msgs.git
 
 ### Post-catkin-make-Compilation Instructions
 
