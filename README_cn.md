@@ -1,14 +1,14 @@
 # ROS节点：rknn_yolo_node
 
 ## 概述
-`rknn_yolo_node`是一个ROS节点，使用RKNN（Rockchip NPU神经网络API）模型进行对象检测。它订阅一个图像主题，使用YOLO（You Only Look Once）对象检测算法处理图像，并发布检测结果。
+`rknn_yolo_node`是一个ROS节点，使用RKNN（Rockchip NPU神经网络API）模型进行对象检测。它订阅一个图像话题，使用YOLO（You Only Look Once）对象检测算法处理图像，并发布检测结果。
 
-## 订阅的主题
-- `raw_img_topic_name` (`sensor_msgs/Image`): 此主题可以动态配置。节点订阅此主题以接收用于对象检测的原始图像。默认主题名称是`/camera_node/image_raw`。
+## 订阅的话题
+- `raw_img_topic_name` (`sensor_msgs/Image`): 此话题可以动态配置。节点订阅此话题以接收用于对象检测的原始图像。默认话题名称是`/camera_node/image_raw`。
 
-## 发布的主题
-- `yolo_output_msg` (`vision_msgs/YoloResult`): 此主题发布YOLO对象检测的结果。每条消息包括检测到的对象及其边界框。
-- `yolo_output_img_msg` (`sensor_msgs/Image`): 如果`enable_draw`参数设置为`True`，此主题将发布带有突出显示的检测对象的图像。
+## 发布的话题
+- `yolo_output_msg` (`vision_msgs/YoloResult`): 此话题发布YOLO对象检测的结果。每条消息包括检测到的对象及其边界框。
+- `yolo_output_img_msg` (`sensor_msgs/Image`): 如果`enable_draw`参数设置为`True`，此话题将发布带有突出显示的检测对象的图像。
 
 ## 服务
 - `~do_yolo` (`ros_rknn_yolo/DoYolo`): 此服务在提供的图像上执行YOLO对象检测，并返回检测结果。
@@ -16,9 +16,9 @@
 ## 参数
 - `~rknn_model_function` (字符串，默认值: 'yolov8_func'): RKNN模型后处理函数文件的名称。
 - `~rknn_model_path` (字符串，默认值: '/home/xiaoqiang/Documents/ros/src/ros_rknn_yolo/model/yolov8s.rknn'): RKNN模型文件的路径。
-- `~enable_streaming_detect` (布尔值，默认值: `False`): 如果为`True`，节点将连续处理来自`raw_img_topic_name`主题的图像。
+- `~enable_streaming_detect` (布尔值，默认值: `False`): 如果为`True`，节点将连续处理来自`raw_img_topic_name`话题的图像。
 - `~enable_crop` (布尔值，默认值: `False`): 如果为`True`，对象检测结果将包含其裁剪图像。
-- `~enable_draw` (布尔值，默认值: `False`): 如果为`True`，节点将发布带有突出显示的检测对象的图像到`yolo_output_img_msg`主题。
+- `~enable_draw` (布尔值，默认值: `False`): 如果为`True`，节点将发布带有突出显示的检测对象的图像到`yolo_output_img_msg`话题。
 - `~drop_interval` (整数，默认值: 1): 丢弃帧的间隔，用于控制处理速度。
 - `~obj_thresh` (浮点数，默认值: 0.25): 对象检测的置信度阈值。
 - `~nms_thresh` (浮点数，默认值: 0.45): 对象检测中非最大抑制的阈值。
@@ -32,7 +32,7 @@
 - `enable_draw` (布尔值): 启用或禁用在发布的图像中突出显示检测到的对象。
 - `enable_streaming_detect` (布尔值): 启用或禁用连续图像处理。
 - `drop_interval` (整数): 设置丢弃帧的间隔，以控制处理速度。
-- `raw_img_topic_name` (字符串): 设置要订阅的图像主题的名称。
+- `raw_img_topic_name` (字符串): 设置要订阅的图像话题的名称。
 
 ## 安装说明
 
@@ -54,9 +54,9 @@ git克隆然后catkin_make, 依赖的vision_msgs包在这里：http://git.bwbot.
 
 如果`use_custom_setting`参数设置为`true`，每个节点还加载一个额外的参数配置文件。对于`yolo_node_1`，这个文件是`do_yolo_1.yaml`，对于`yolo_node_2`，它是`do_yolo_2.yaml`。这些文件位于`startup`包的`params`目录中。
 
-### 主题重映射
+### 话题重映射
 
-每个节点发布两个主题：`yolo_output_msg`和`yolo_output_img_msg`。这些主题的名称在启动文件中被重映射。对于`yolo_node_1`，`yolo_output_msg`被重映射为`/yolo_node_1/yolo_result`，`yolo_output_img_msg`被重映射为`/yolo_node_1/yolo_result_img`。对于`yolo_node_2`，`yolo_output_msg`被重映射为`/yolo_node_2/yolo_result`，`yolo_output_img_msg`被重映射为`/yolo_node_2/yolo_result_img`。
+每个节点发布两个话题：`yolo_output_msg`和`yolo_output_img_msg`。这些话题的名称在启动文件中被重映射。对于`yolo_node_1`，`yolo_output_msg`被重映射为`/yolo_node_1/yolo_result`，`yolo_output_img_msg`被重映射为`/yolo_node_1/yolo_result_img`。对于`yolo_node_2`，`yolo_output_msg`被重映射为`/yolo_node_2/yolo_result`，`yolo_output_img_msg`被重映射为`/yolo_node_2/yolo_result_img`。
 
 ### 运行启动文件
 
