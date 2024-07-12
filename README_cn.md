@@ -3,6 +3,17 @@
 ## 概述
 `rknn_yolo_node`是一个ROS节点，使用RKNN（Rockchip NPU神经网络API）模型进行对象检测。它订阅一个图像话题，使用YOLO（You Only Look Once）对象检测算法处理图像，并发布检测结果。
 
+## 待办事项列表
+- [x] yolov5 detection
+- [x] yolov8 detection
+- [x] yolov8 detection with sahi
+- [x] yolov8 segmentation
+- [ ] yolov8 pose
+- [ ] yolov8 obb
+  
+## 测试过的平台
+目前只在rk3588中测试过，rk3588安装的是ubuntu22.04 gnome desktop版本，ros1安装的是o版本。在ubuntu22.04中，你可以通过apt安装ros-desktop-full-dev和https://wiki.debian.org/DebianScience/Robotics/ROS/Packages 中列出的大多数其他包（有些在Debian中，但还未在Ubuntu中，它落后于Debian的机器人技术发布）。可能你需要从https://github.com/ros-o 和官方的GitHub仓库（如rqt）中编译一些源代码包 - 如果有一个ros-o版本包含了一些还未在官方仓库中的补丁，请使用ros-o版本。
+  
 ## 订阅的话题
 - `raw_img_topic_name` (`sensor_msgs/Image`): 此话题可以动态配置。节点订阅此话题以接收用于对象检测的原始图像。默认话题名称是`/camera_node/image_raw`。
 

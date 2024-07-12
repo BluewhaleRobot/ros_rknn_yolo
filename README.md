@@ -3,6 +3,17 @@
 ## Overview
 The `rknn_yolo_node` is a ROS node that uses the RKNN (Rockchip NPU Neural Networks API) model for object detection. It subscribes to an image topic, processes the images using the YOLO (You Only Look Once) object detection algorithm, and publishes the detection results.
 
+## To-do List
+- [x] yolov5 detection
+- [x] yolov8 detection
+- [x] yolov8 detection with sahi
+- [x] yolov8 segmentation
+- [ ] yolov8 pose
+- [ ] yolov8 obb
+  
+## Tested Platforms
+Currently only tested on rk3588, rk3588 is installed with ubuntu22.04 gnome desktop version, ros1 is installed with the o version. In ubuntu22.04, you can install ros-desktop-full-dev and most of the other packages listed at https://wiki.debian.org/DebianScience/Robotics/ROS/Packages through apt (some are in Debian, but not yet in Ubuntu, it lags behind Debian's robot technology release). You may need to compile some source code packages from https://github.com/ros-o and the official GitHub repository (such as rqt) - if there is a ros-o version that includes some patches not yet in the official repository, please use the ros-o version.
+
 ## Subscribed Topics
 - `raw_img_topic_name` (`sensor_msgs/Image`): This topic is dynamically reconfigurable. The node subscribes to this topic to receive raw images for object detection. The default topic name is `/camera_node/image_raw`.
 
