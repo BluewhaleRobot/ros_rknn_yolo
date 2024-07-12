@@ -6,4 +6,10 @@
         <remap from="yolo_output_msg" to="/yolo_node_1/yolo_result" />
         <remap from="yolo_output_img_msg" to="/yolo_node_1/yolo_result_img" />
     </node>
+    <node name="yolo_node_2" pkg="ros_rknn_yolo" type="rknn_yolo_node.sh" output="screen">
+        <rosparam command="load" file="$(find ros_rknn_yolo)/config/default2.yaml" />
+        <rosparam command="load" file="$(find startup)/params/do_yolo_2.yaml" if="$(eval use_custom_setting)" />
+        <remap from="yolo_output_msg" to="/yolo_node_2/yolo_result" />
+        <remap from="yolo_output_img_msg" to="/yolo_node_2/yolo_result_img" />
+    </node>
 </launch>

@@ -1,13 +1,14 @@
 enable_streaming_detect: false
 enable_draw: false
 enable_crop: false
+hide_label: false
 raw_img_topic_name: "/camera_node/image_raw"
 drop_interval: 1
 obj_thresh: 0.25
 nms_thresh: 0.45
 slice_height: 480  # 切片高度
 slice_width: 480  # 切片宽度
-hide_label: true
+
 overlap_height_ratio: 0.25  # 高度重叠比率
 overlap_width_ratio: 0.25  # 宽度重叠比率
 

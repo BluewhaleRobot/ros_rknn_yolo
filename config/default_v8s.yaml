@@ -1,6 +1,7 @@
 enable_streaming_detect: false
 enable_draw: false
 enable_crop: false
+hide_label: false
 raw_img_topic_name: "/camera_node/image_raw"
 drop_interval: 1
 obj_thresh: 0.25

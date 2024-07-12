@@ -30,6 +30,11 @@ CLASSES = rospy.get_param('~classes', ("person", "bicycle", "car", "motorbike ",
            "pottedplant", "bed", "diningtable", "toilet ", "tvmonitor", "laptop	", "mouse	", "remote ", "keyboard ", "cell phone", "microwave ",
            "oven ", "toaster", "sink", "refrigerator ", "book", "clock", "vase", "scissors ", "teddy bear ", "hair drier", "toothbrush "))
 
+np.random.seed(0)
+color_palette = np.random.uniform(100, 255, size=(len(CLASSES), 3))
+
+HIDE_LABEL = rospy.get_param('~hide_label', False)  # 是否隐藏标签
+
 class Colors:
     # Ultralytics color palette https://ultralytics.com/
     def __init__(self):
@@ -315,11 +320,13 @@ def draw(image, boxes, scores, classes, ratio, padding):
         top = int(top)
         left = int(left)
 
-        cv2.rectangle(image, (top, left), (int(right), int(bottom)), (255, 0, 0), 2)
-        cv2.putText(image, '{0} {1:.2f}'.format(CLASSES[cl], score),
-                    (top, left - 6),
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    0.6, (0, 0, 255), 2)
+        color = color_palette[cl]
+        cv2.rectangle(image, (top, left), (int(right), int(bottom)), color, 2)
+        if not HIDE_LABEL:
+            cv2.putText(image, '{0} {1:.2f}'.format(CLASSES[cl], score),
+                        (top, left - 6),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.6, color, 2)
         
 # def merge_seg(image, seg_img, classes):
 #     color = Colors()

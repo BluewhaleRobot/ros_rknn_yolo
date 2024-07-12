@@ -64,7 +64,8 @@ CATEGORY_MAPPING  = rospy.get_param('~category_mapping', {'0': 'person', '1': 'b
                     '70': 'toaster', '71': 'sink', '72': 'refrigerator', '73': 'book', '74': 'clock', '75': 'vase',
                     '76': 'scissors', '77': 'teddy bear', '78': 'hair drier', '79': 'toothbrush'})
 
-color_palette = np.random.uniform(100, 255, size=(len(CATEGORY_MAPPING), 3))
+np.random.seed(0)
+color_palette = np.random.uniform(100, 255, size=(len(CLASSES), 3))
 
 HIDE_LABEL = rospy.get_param('~hide_label', False)  # 是否隐藏标签
 SLICE_HEIGHT = rospy.get_param('~slice_height', 480)  # 切片高度
