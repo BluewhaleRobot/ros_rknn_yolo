@@ -102,7 +102,6 @@ class YoloSubscriber:
                         return
                     if cv_image is None or cv_image.shape[0] < 6 or cv_image.shape[1] < 6:
                         return
-                    
                     POOL.put(cv_image, header, enable_crop, enable_draw)
             else:
                 pass
@@ -132,36 +131,37 @@ class YoloSubscriber:
 
     def do_yolo_srv(self, req):
         # print("do_yolo_srv1")
-        with POOL_LOCK1 and POOL_LOCK2:
-            # print("do_yolo_srv2")
-            POOL.clearqueue()
-            # print("do_yolo_srv3")
-            cv_image = self.bridge.imgmsg_to_cv2(req.input_img, "bgr8")
-            #check cv_image is None or too small size
-            if cv_image is None or cv_image.shape[0] < 6 or cv_image.shape[1] < 6:
+        with POOL_LOCK1:
+            with POOL_LOCK2:
+                # print("do_yolo_srv2")
+                POOL.clearqueue()
+                # print("do_yolo_srv3")
+                cv_image = self.bridge.imgmsg_to_cv2(req.input_img, "bgr8")
+                #check cv_image is None or too small size
+                if cv_image is None or cv_image.shape[0] < 6 or cv_image.shape[1] < 6:
+                    res = DoYoloResponse()
+                    res.result = False
+                    return res
+                # print("do_yolo_srv4")
+                header = Header()
+                POOL.put(cv_image, header, req.enable_crop, req.enable_draw)
+                # print("do_yolo_srv5")
+                flag = False
+                while POOL.getQueueSize() > 0 and rospy.is_shutdown() == False:
+                    #sleep 10ms
+                    rospy.sleep(0.01)
+                # print("do_yolo_srv6")   
+                while not flag and rospy.is_shutdown() == False:
+                    result, flag = POOL.get()
+                    #sleep 10ms
+                    rospy.sleep(0.01)
+                # print("do_yolo_srv7")
                 res = DoYoloResponse()
-                res.result = False
+                res.result = flag
+                res.yolo_result = result[0]
+                res.yolo_result_img = self.bridge.cv2_to_imgmsg(result[1], "bgr8")
+                # print("do_yolo_srv8")
                 return res
-            # print("do_yolo_srv4")
-            header = Header()
-            POOL.put(cv_image, header, req.enable_crop, req.enable_draw)
-            # print("do_yolo_srv5")
-            flag = False
-            while POOL.getQueueSize() > 0 and rospy.is_shutdown() == False:
-                #sleep 10ms
-                rospy.sleep(0.01)
-            # print("do_yolo_srv6")   
-            while not flag and rospy.is_shutdown() == False:
-                result, flag = POOL.get()
-                #sleep 10ms
-                rospy.sleep(0.01)
-            # print("do_yolo_srv7")
-            res = DoYoloResponse()
-            res.result = flag
-            res.yolo_result = result[0]
-            res.yolo_result_img = self.bridge.cv2_to_imgmsg(result[1], "bgr8")
-            # print("do_yolo_srv8")
-            return res
         
 if __name__ == "__main__":
     ds = YoloSubscriber()
